@@ -3,6 +3,7 @@ package com.example.navdrawerdemo;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.room.Room;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -21,10 +22,13 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class AboutUs extends AppCompatActivity{
     DrawerLayout drawerLayout;
-    ArrayList<CatObject> catList;
+    List<CatObject> catList;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +36,19 @@ public class AboutUs extends AppCompatActivity{
         setContentView(R.layout.activity_about_us);
         drawerLayout = findViewById(R.id.drawer_layout);
 
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "database-name").allowMainThreadQueries().build();
+        CatDAO catDAO  = db.catDAO();
 
 
         catList= new ArrayList<>();
-        catList.add(new CatObject("bengal cat", R.drawable.bengal_icon));
-        catList.add(new CatObject("persian cat", R.drawable.persian_icon));
-        catList.add(new CatObject("siameser cat",R.drawable.siameser_cat_cart));
+//        catList.add(new CatObject("bengal cat", R.drawable.bengal_icon));
+//        catList.add(new CatObject("persian cat", R.drawable.persian_icon));
+//        catList.add(new CatObject("siameser cat",R.drawable.siameser_cat_cart));
+
+
+        catList = catDAO.getAll();
+
+
         dynamicTable();
     }
     public void clickMenu(View view){
@@ -71,6 +82,9 @@ public class AboutUs extends AppCompatActivity{
         MainActivity.closeDrawer(drawerLayout);
     }
     public void dynamicTable() {
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "database-name").allowMainThreadQueries().build();
+        CatDAO catDAO  = db.catDAO();
+
         TableLayout table = (TableLayout) findViewById(R.id.table_main);
         for (int i = 0; i < catList.size(); i++) {
             TableRow tr = new TableRow(this);
@@ -84,12 +98,16 @@ public class AboutUs extends AppCompatActivity{
             text.setText(catList.get(i).getCatName());
      //       text.setGravity(Gravity.CENTER);
 
+            final int i2 = i;
+
             Button btn= new Button(this);
             btn.setId(i);
             btn.setText("DELETE");
             btn.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
+
                     table.removeView(tr);
+                    catDAO.delete(catList.get(i2));
                 }
             });
             tr.addView(iView);

@@ -3,6 +3,7 @@ package com.example.navdrawerdemo;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.room.Room;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,15 +20,25 @@ import android.widget.TextView;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Dashboard extends AppCompatActivity {
     public static final int GET_FROM_GALLERY = 3;
     DrawerLayout drawerLayout;
     ImageView newCat;
+
+    public List<CatObject> catList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
+
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "database-name").allowMainThreadQueries().build();
+        CatDAO catDAO  = db.catDAO();
+
+        catList = new ArrayList<>();
+        catList = catDAO.getAll();
 
         drawerLayout = findViewById(R.id.drawer_layout);
 
@@ -87,16 +98,27 @@ public class Dashboard extends AppCompatActivity {
     }
     public void addCat (View View) {
 
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "database-name").allowMainThreadQueries().build();
+        CatDAO catDAO  = db.catDAO();
+
         //finding new name
         EditText mEdit = (EditText) findViewById(R.id.catNameInput);
         String newCatName = mEdit.getText().toString();
         TextView catName= (TextView) findViewById(R.id.catNameOfAddedCat);
         catName.setText(newCatName);
         newCat.getDrawable();
+
+
+
         ImageView imgV= (ImageView) findViewById(R.id.CatImage);
         imgV.setImageDrawable(newCat.getDrawable());
-        CatObject upladedCat= new CatObject(newCatName, R.id.newCatImage);
 
+
+        System.out.println("ID navnet er: " + R.id.newCatImage);
+
+        CatObject uploadedCat= new CatObject(catList.size()+1, newCatName, R.id.newCatImage);
+        catList.add(uploadedCat);
+        catDAO.insertAll(uploadedCat);
         //test
         System.out.println(newCatName +newCat.getDrawable() );
 

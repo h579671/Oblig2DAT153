@@ -3,6 +3,8 @@ package com.example.navdrawerdemo;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.MutableLiveData;
+import androidx.room.Room;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,16 +18,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
     public DrawerLayout drawerLayout;
-    public ArrayList<CatObject> catList;
+    public List<CatObject> catList;
     public String scoreTxt="Score";
     public CatObject currentCat;
     public int correctAns=0;
     public int totalAns=0;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,10 +35,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         drawerLayout = findViewById(R.id.drawer_layout);
         catList= new ArrayList<>();
-        catList.add(new CatObject("bengal cat", R.drawable.bengal_icon));
-        catList.add(new CatObject("persian cat", R.drawable.persian_icon));
-        catList.add(new CatObject("siameser cat",R.drawable.siameser_cat_cart));
+
+
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "database-name").allowMainThreadQueries().build();
+        CatDAO catDAO  = db.catDAO();
+
+
+
+        catList = catDAO.getAll();
+
+        if(catList.size() == 0) {
+            catList.add(new CatObject(0,"bengal cat", R.drawable.bengal_icon));
+            catList.add(new CatObject(1, "persian cat", R.drawable.persian_icon));
+            catList.add(new CatObject(2, "siameser cat",R.drawable.siameser_cat_cart));
+            catDAO.insertAll(catList.get(0));
+            catDAO.insertAll(catList.get(1));
+            catDAO.insertAll(catList.get(2));
+            catList = catDAO.getAll();
+        }
+
         getRandomImage();
+
     }
     private void getRandomImage(){
         ImageView mImageView = (ImageView)findViewById(R.id.myImageView);
@@ -45,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         int catObjectImageCode= catRandObj.getImageName(); //catList.get(imageId).getImageName()
         mImageView.setBackgroundResource(catObjectImageCode);
     }
-    public CatObject getRandomElement(ArrayList<CatObject> list)
+    public CatObject getRandomElement(List<CatObject> list)
     {
         Random rand = new Random();
         return list.get(rand.nextInt(list.size()));
@@ -146,4 +165,8 @@ public class MainActivity extends AppCompatActivity {
                 R.id.answer);
         displayInteger.setText("Correct answer: "+ currentCat.getCatName() );
     }
+
+
+
+
 }

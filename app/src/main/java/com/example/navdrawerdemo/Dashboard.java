@@ -4,10 +4,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.room.Room;
+import androidx.room.TypeConverter;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -17,8 +19,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +32,9 @@ public class Dashboard extends AppCompatActivity {
     public static final int GET_FROM_GALLERY = 3;
     DrawerLayout drawerLayout;
     ImageView newCat;
+
+
+    Bitmap imageAdder;
 
     public List<CatObject> catList;
 
@@ -88,7 +97,9 @@ public class Dashboard extends AppCompatActivity {
             Bitmap bitmap = null;
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                imageAdder = bitmap;
                 newCat.setImageBitmap(bitmap);
+
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -116,7 +127,7 @@ public class Dashboard extends AppCompatActivity {
 
         System.out.println("ID navnet er: " + R.id.newCatImage);
 
-        CatObject uploadedCat= new CatObject(catList.size()+1, newCatName, R.id.newCatImage);
+        CatObject uploadedCat= new CatObject(catList.size()+1, newCatName, frombit(imageAdder));
         catList.add(uploadedCat);
         catDAO.insertAll(uploadedCat);
         //test
@@ -125,6 +136,33 @@ public class Dashboard extends AppCompatActivity {
 
     }
 
+    public byte[] frombit(Bitmap bitmap){
+
+//        ByteArrayOutputStream out = new ByteArrayOutputStream();
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 10, out);
+//        Bitmap decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+//
+
+        int size     = bitmap.getRowBytes() * bitmap.getHeight();
+
+        ByteBuffer b = ByteBuffer.allocate(size);
+        bitmap.copyPixelsToBuffer(b);
+
+        byte[] bytes = new byte[size];
+
+        try {
+
+            b.get(bytes, 0, bytes.length);
+
+        } catch (BufferUnderflowException e) {
+
+            // always happens
+
+        }
+
+        return bytes;
+
+    }
 
 
 }

@@ -4,8 +4,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.room.Room;
+import androidx.room.TypeConverter;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +24,10 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,7 +98,7 @@ public class AboutUs extends AppCompatActivity{
             tr.setLayoutParams(new TableRow.LayoutParams( TableRow.LayoutParams.WRAP_CONTENT));
 
             ImageView iView = new ImageView(this);
-            iView.setImageResource(catList.get(i).getImageName());
+            iView.setImageBitmap(frombyte(catList.get(i).getImageName()));
             TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(100, 80);
             iView.setLayoutParams(layoutParams);
             TextView text = new TextView(this);
@@ -117,4 +124,49 @@ public class AboutUs extends AppCompatActivity{
             table.addView(tr);
         }
     }
+
+    @TypeConverter
+    public byte[] frombit(Bitmap bitmap){
+
+//        ByteArrayOutputStream out = new ByteArrayOutputStream();
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 10, out);
+//        Bitmap decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+//
+
+        int size     = bitmap.getRowBytes() * bitmap.getHeight();
+
+        ByteBuffer b = ByteBuffer.allocate(size);
+        bitmap.copyPixelsToBuffer(b);
+
+        byte[] bytes = new byte[size];
+
+        try {
+
+            b.get(bytes, 0, bytes.length);
+
+        } catch (BufferUnderflowException e) {
+
+            // always happens
+
+        }
+
+        return bytes;
+
+    }
+
+    @TypeConverter
+    public Bitmap frombyte(byte[] bytes){
+
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 10, out);
+        Bitmap decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+
+
+
+
+
+        return decoded;
+    }
+
 }

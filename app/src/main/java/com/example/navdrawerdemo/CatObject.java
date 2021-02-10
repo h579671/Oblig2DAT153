@@ -15,14 +15,23 @@ public class CatObject {
     @ColumnInfo(name = "cat_name")
     private String catName;
 
-    @ColumnInfo(name = "image_name")
-    private int imageName;
+    //old
+//    @ColumnInfo(name = "image_name")
+//    private int imageName;
+
+    @ColumnInfo(name = "image_name", typeAffinity = ColumnInfo.BLOB)
+    private byte[] imageName;
 
 
-    public CatObject(int uid, String catName, int imageName){
+
+
+
+
+    public CatObject(int uid, String catName, byte[] imageName){
         this.uid = uid;
         this.catName = catName;
         this.imageName = imageName;
+
     }
 
     public String getCatName() {
@@ -33,11 +42,11 @@ public class CatObject {
         this.catName = catName;
     }
 
-    public int getImageName() {
+    public byte[] getImageName() {
         return imageName;
     }
 
-    public void setImageName(int imageName) {
+    public void setImageName(byte[] imageName) {
         this.imageName = imageName;
     }
 
